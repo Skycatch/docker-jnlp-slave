@@ -19,7 +19,6 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
-
 FROM jenkinsci/jnlp-slave:alpine
 MAINTAINER Blaine Schanfeldt <git@blaines.me>
 # Root user is required to interact with Docker via docker.sock
@@ -27,13 +26,14 @@ USER root
 # BEGIN from Docker https://github.com/docker-library/docker/blob/master/17.06/Dockerfile
 RUN apk add --no-cache \
 		ca-certificates
-
 ENV DOCKER_CHANNEL stable
-ENV DOCKER_VERSION 17.06.0-ce
+ENV DOCKER_VERSION 17.09.0-ce
+ENV DOCKER_COMPOSE_VERSION 1.16.1
+ENV SAM_VERSION 0.2.4
+
 # TODO ENV DOCKER_SHA256
 # https://github.com/docker/docker-ce/blob/5b073ee2cf564edee5adca05eee574142f7627bb/components/packaging/static/hash_files !!
 # (no SHA file artifacts on download.docker.com yet as of 2017-06-07 though)
-
 RUN set -ex; \
 # why we use "curl" instead of "wget":
 # + wget -O docker.tgz https://download.docker.com/linux/static/stable/x86_64/docker-17.03.1-ce.tgz
@@ -41,6 +41,7 @@ RUN set -ex; \
 # wget: error getting response: Connection reset by peer
 	apk add --no-cache --virtual .fetch-deps \
 		curl \
+		curl-dev \
 		tar \
 	; \
 	\
@@ -67,10 +68,8 @@ RUN set -ex; \
 	apk del .fetch-deps; \
 	\
 	dockerd -v; \
-	docker -v
-
+	docker -v;
 # END from Docker
-
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.4/community' >> /etc/apk/repositories \
   && apk --update add make \
   bash \
@@ -83,4 +82,11 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.4/community' >> /etc/apk/repos
   groff \
   less && \
   pip --no-cache-dir install awscli && \
+  pip --no-cache-dir install docker-compose==${DOCKER_COMPOSE_VERSION} && \
   rm -rf /var/cache/apk/*
+
+RUN apk add --no-cache curl && \
+    curl -sSLO https://github.com/awslabs/aws-sam-local/releases/download/v${SAM_VERSION}/sam_${SAM_VERSION}_linux_amd64.tar.gz && \
+    tar -C /usr/local/bin -zxvf sam_${SAM_VERSION}_linux_amd64.tar.gz && \
+    apk del curl && \
+    rm -f /sam_${SAM_VERSION}_linux_amd64.tar.gz

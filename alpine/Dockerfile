@@ -80,6 +80,8 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.4/community' >> /etc/apk/repos
   py-setuptools \
   ca-certificates \
   groff \
+  nodejs \
+  nodejs-npm \
   less && \
   pip --no-cache-dir install awscli && \
   pip --no-cache-dir install docker-compose==${DOCKER_COMPOSE_VERSION} && \

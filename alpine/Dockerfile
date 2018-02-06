@@ -23,56 +23,14 @@ FROM jenkinsci/jnlp-slave:alpine
 MAINTAINER Blaine Schanfeldt <git@blaines.me>
 # Root user is required to interact with Docker via docker.sock
 USER root
-# BEGIN from Docker https://github.com/docker-library/docker/blob/master/17.06/Dockerfile
-RUN apk add --no-cache \
-		ca-certificates
-ENV DOCKER_CHANNEL stable
-ENV DOCKER_VERSION 17.09.0-ce
-ENV DOCKER_COMPOSE_VERSION 1.16.1
+
 ENV SAM_VERSION 0.2.4
 
-# TODO ENV DOCKER_SHA256
-# https://github.com/docker/docker-ce/blob/5b073ee2cf564edee5adca05eee574142f7627bb/components/packaging/static/hash_files !!
-# (no SHA file artifacts on download.docker.com yet as of 2017-06-07 though)
-RUN set -ex; \
-# why we use "curl" instead of "wget":
-# + wget -O docker.tgz https://download.docker.com/linux/static/stable/x86_64/docker-17.03.1-ce.tgz
-# Connecting to download.docker.com (54.230.87.253:443)
-# wget: error getting response: Connection reset by peer
-	apk add --no-cache --virtual .fetch-deps \
-		curl \
-		curl-dev \
-		tar \
-	; \
-	\
-# this "case" statement is generated via "update.sh"
-	apkArch="$(apk --print-arch)"; \
-	case "$apkArch" in \
-		x86_64) dockerArch='x86_64' ;; \
-		s390x) dockerArch='s390x' ;; \
-		*) echo >&2 "error: unsupported architecture ($apkArch)"; exit 1 ;;\
-	esac; \
-	\
-	if ! curl -fL -o docker.tgz "https://download.docker.com/linux/static/${DOCKER_CHANNEL}/${dockerArch}/docker-${DOCKER_VERSION}.tgz"; then \
-		echo >&2 "error: failed to download 'docker-${DOCKER_VERSION}' from '${DOCKER_CHANNEL}' for '${dockerArch}'"; \
-		exit 1; \
-	fi; \
-	\
-	tar --extract \
-		--file docker.tgz \
-		--strip-components 1 \
-		--directory /usr/local/bin/ \
-	; \
-	rm docker.tgz; \
-	\
-	apk del .fetch-deps; \
-	\
-	dockerd -v; \
-	docker -v;
-# END from Docker
-RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.4/community' >> /etc/apk/repositories \
+RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.7/community' >> /etc/apk/repositories \
   && apk --update add make \
   bash \
+  go \
+  docker \
   iptables \
   e2fsprogs \
   python \
@@ -84,7 +42,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.4/community' >> /etc/apk/repos
   nodejs-npm \
   less && \
   pip --no-cache-dir install awscli && \
-  pip --no-cache-dir install docker-compose==${DOCKER_COMPOSE_VERSION} && \
+  pip --no-cache-dir install docker-compose && \
   rm -rf /var/cache/apk/*
 
 RUN apk add --no-cache curl && \
@@ -92,3 +50,4 @@ RUN apk add --no-cache curl && \
     tar -C /usr/local/bin -zxvf sam_${SAM_VERSION}_linux_amd64.tar.gz && \
     apk del curl && \
     rm -f /sam_${SAM_VERSION}_linux_amd64.tar.gz
+

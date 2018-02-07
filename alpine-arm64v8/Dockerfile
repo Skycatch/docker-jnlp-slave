@@ -86,11 +86,12 @@ COPY jenkins-slave /usr/local/bin/jenkins-slave
 
 # Root user is required to interact with Docker via docker.sock
 USER root
+ENV DOCKER_VERSION 17.10.0-r0
 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.7/community' >> /etc/apk/repositories \
   && apk --update add make \
   bash \
-  docker \
+  docker=${DOCKER_VERSION} \
   iptables \
   e2fsprogs \
   python \

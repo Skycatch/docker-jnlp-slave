@@ -25,7 +25,7 @@ MAINTAINER Blaine Schanfeldt <git@blaines.me>
 USER root
 
 ENV SAM_VERSION 0.2.4
-ENV DOCKER_VERSION 17.10.0-r0
+ARG DOCKER_VERSION 17.10.0-r0
 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.7/community' >> /etc/apk/repositories \
   && apk --update add make \

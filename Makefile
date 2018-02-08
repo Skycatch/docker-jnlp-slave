@@ -12,7 +12,7 @@ build:
 		make -C $$variant; \
 	done
 
-push:
+upload:
 	for variant in $(VARIANTS); do \
 		repo_organization=$(repo_organization) \
     	repo_name=$(repo_name) \

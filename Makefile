@@ -12,7 +12,7 @@ build:
 		make -C $$variant; \
 	done
 
-upload:
+push:
 	for variant in $(VARIANTS); do \
 		repo_organization=$(repo_organization) \
     	repo_name=$(repo_name) \
@@ -20,3 +20,5 @@ upload:
 		DOCKER_VERSION=$(DOCKER_VERSION) \
 		make push -C $$variant; \
 	done
+
+upload: push
